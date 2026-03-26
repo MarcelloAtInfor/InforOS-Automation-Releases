@@ -1,0 +1,160 @@
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="RehostedWorkflowDesigner.Workflow" this:Workflow.configurationFolder="C:\InforRPA\InvoiceSampleGenerator" this:Workflow.tenantURL="" this:Workflow.site="" this:Workflow.enableDebugMode="True"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:ias="clr-namespace:Infor.Activities.Sys;assembly=Infor.Activities.Sys"
+ xmlns:iaw="clr-namespace:Infor.Activities.Workflow;assembly=Infor.Activities.Workflow"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities"
+ xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+ xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+ xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
+ xmlns:this="clr-namespace:RehostedWorkflowDesigner"
+ xmlns:s="clr-namespace:System;assembly=mscorlib"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="configurationFolder" Type="InArgument(x:String)" />
+    <x:Property Name="tenantURL" Type="InArgument(x:String)" />
+    <x:Property Name="site" Type="InArgument(x:String)" />
+    <x:Property Name="enableDebugMode" Type="InArgument(x:Boolean)" />
+  </x:Members>
+  <mva:VisualBasic.Settings><x:Null /></mva:VisualBasic.Settings>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System</x:String>
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>Microsoft.VisualBasic.Activities</x:String>
+      <x:String>System.Collections.Generic</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>Microsoft.VisualBasic</AssemblyReference>
+      <AssemblyReference>Infor.Activities.Sys</AssemblyReference>
+      <AssemblyReference>Infor.Activities.Workflow</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="InvoiceSampleGenerator - Main">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Default="[Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)+&quot;\AppData\Local\InforRPA\InvoiceSampleGenerator&quot;]" Name="projectPathCache" />
+      <Variable x:TypeArguments="x:String" Default="" Name="projectPathSource" />
+      <Variable x:TypeArguments="x:String" Default="" Name="repoRoot" />
+      <Variable x:TypeArguments="x:String" Name="projectPath" />
+      <Variable x:TypeArguments="x:String" Name="rendererScript" />
+      <Variable x:TypeArguments="x:String" Name="defaultRequestJsonPath" />
+      <Variable x:TypeArguments="x:String" Name="effectiveRequestJsonPath" />
+      <Variable x:TypeArguments="x:String" Name="dialogRequestJsonPath" />
+      <Variable x:TypeArguments="x:Object" Name="dialogProcess" />
+      <Variable x:TypeArguments="x:Boolean" Name="dialogExited" />
+      <Variable x:TypeArguments="x:Boolean" Name="dialogCancelled" />
+      <Variable x:TypeArguments="x:String" Name="logFolderPath" />
+      <Variable x:TypeArguments="x:String" Name="logFile" />
+      <Variable x:TypeArguments="scg:IDictionary(x:String, x:Object)" Name="controllerOutput" />
+      <Variable x:TypeArguments="x:String" Name="operationStatusLocal" />
+      <Variable x:TypeArguments="x:String" Name="errorMessageLocal" />
+      <Variable x:TypeArguments="x:String" Name="responseJsonPathLocal" />
+      <Variable x:TypeArguments="x:Object" Name="debugTailProcess" />
+    </Sequence.Variables>
+    <Assign DisplayName="Detect Project Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[projectPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(System.IO.File.Exists(projectPathCache + "\ProcessGenerationRequest.xaml"), projectPathCache, projectPathSource)]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Resolve Renderer Script">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[rendererScript]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[repoRoot + "\scripts\render_invoice_batch.py"]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set Log Folder Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[logFolderPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[configurationFolder + "\Logs"]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set Default Request Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[defaultRequestJsonPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[projectPath + "\config\DefaultGenerationRequest.json"]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Init Effective Request Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[effectiveRequestJsonPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[defaultRequestJsonPath]</InArgument></Assign.Value>
+    </Assign>
+    <ias:Directory_Create ErrorCode="{x:Null}" OutputPath="{x:Null}" ContinueOnError="True" DisplayName="Ensure Configuration Folder" Name="[System.IO.Path.GetFileName(configurationFolder)]" Target="[System.IO.Directory.GetParent(configurationFolder).FullName]" />
+    <ias:Directory_Create ErrorCode="{x:Null}" OutputPath="{x:Null}" ContinueOnError="True" DisplayName="Ensure Logs Folder" Name="Logs" Target="[configurationFolder]" />
+    <Assign DisplayName="Set Log File Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[logFile]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[logFolderPath + "\InvoiceSampleGenerator_" + System.DateTime.Now.ToString("yyyyMMdd") + ".txt"]</InArgument></Assign.Value>
+    </Assign>
+    <ias:Append_Line ErrorCode="{x:Null}" ContinueOnError="True" DisplayName="Log Start Time" Line="[System.Environment.NewLine + &quot;===============================================&quot; + System.Environment.NewLine + &quot;InvoiceSampleGenerator - Start Time: &quot; + System.DateTime.Now.ToString(&quot;yyyy/MM/dd HH:mm:ss&quot;) + System.Environment.NewLine + &quot;TenantURL: &quot; + If(String.IsNullOrWhiteSpace(tenantURL), &quot;(not configured - CSI resolution disabled)&quot;, tenantURL) + System.Environment.NewLine + &quot;Site: &quot; + If(String.IsNullOrWhiteSpace(site), &quot;(not configured)&quot;, site) + System.Environment.NewLine + &quot;DebugMode: &quot; + enableDebugMode.ToString() + System.Environment.NewLine + &quot;===============================================&quot;]" Source="[logFile]" />
+    <TryCatch DisplayName="Main Try-Catch">
+      <TryCatch.Try>
+        <Sequence DisplayName="Main Logic">
+          <!-- Show Input Dialog -->
+          <Assign DisplayName="Set Dialog Output Path">
+            <Assign.To><OutArgument x:TypeArguments="x:String">[dialogRequestJsonPath]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="x:String">[configurationFolder + "\Logs\attended_request_" + System.Guid.NewGuid().ToString("N").Substring(0, 8) + ".json"]</InArgument></Assign.Value>
+          </Assign>
+          <Assign DisplayName="Launch Input Dialog">
+            <Assign.To><OutArgument x:TypeArguments="x:Object">[dialogProcess]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="x:Object">[System.Diagnostics.Process.Start(New System.Diagnostics.ProcessStartInfo() With {.FileName = "powershell.exe", .Arguments = "-sta -ExecutionPolicy Bypass -File """ + projectPath + "\scripts\show_input_dialog.ps1"" -RequestJsonPath """ + effectiveRequestJsonPath + """ -OutputRequestJsonPath """ + dialogRequestJsonPath + """", .CreateNoWindow = False, .WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal})]</InArgument></Assign.Value>
+          </Assign>
+          <Assign DisplayName="Wait For Dialog">
+            <Assign.To><OutArgument x:TypeArguments="x:Boolean">[dialogExited]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="x:Boolean">[If(dialogProcess Is Nothing, False, CType(dialogProcess, System.Diagnostics.Process).WaitForExit(300000))]</InArgument></Assign.Value>
+          </Assign>
+          <If Condition="[dialogExited AndAlso dialogProcess IsNot Nothing AndAlso CType(dialogProcess, System.Diagnostics.Process).ExitCode = 0 AndAlso System.IO.File.Exists(dialogRequestJsonPath)]" DisplayName="If Dialog OK">
+            <If.Then>
+              <Sequence DisplayName="Process Generation">
+                <Assign DisplayName="Use Dialog Request">
+                  <Assign.To><OutArgument x:TypeArguments="x:String">[effectiveRequestJsonPath]</OutArgument></Assign.To>
+                  <Assign.Value><InArgument x:TypeArguments="x:String">[dialogRequestJsonPath]</InArgument></Assign.Value>
+                </Assign>
+                <If Condition="[enableDebugMode]" DisplayName="If Debug Mode">
+                  <If.Then>
+                    <Assign DisplayName="Launch Debug Log Tail">
+                      <Assign.To><OutArgument x:TypeArguments="x:Object">[debugTailProcess]</OutArgument></Assign.To>
+                      <Assign.Value><InArgument x:TypeArguments="x:Object">[System.Diagnostics.Process.Start(New System.Diagnostics.ProcessStartInfo() With {.FileName = "powershell.exe", .Arguments = "-NoExit -Command ""Write-Host 'InvoiceSampleGenerator - Live Log' -ForegroundColor Cyan; Write-Host '========================================' -ForegroundColor Cyan; Get-Content -Path '" + logFile + "' -Wait -Tail 20"""})]</InArgument></Assign.Value>
+                    </Assign>
+                  </If.Then>
+                </If>
+                <iaw:InvokeWorkflow ResponseCode="{x:Null}" Arguments="[New Dictionary(Of String, Object) From {{&quot;projectPath&quot;, projectPath}, {&quot;requestJsonPath&quot;, effectiveRequestJsonPath}, {&quot;tenantURL&quot;, tenantURL}, {&quot;site&quot;, site}, {&quot;rendererScript&quot;, rendererScript}, {&quot;logFile&quot;, logFile}}]" ContinueOnError="False" DisplayName="Process Generation Request" OutputArguments="[controllerOutput]" WorkflowFile="[projectPath + &quot;\ProcessGenerationRequest.xaml&quot;]" />
+                <Assign DisplayName="Read Status">
+                  <Assign.To><OutArgument x:TypeArguments="x:String">[operationStatusLocal]</OutArgument></Assign.To>
+                  <Assign.Value><InArgument x:TypeArguments="x:String">[If(controllerOutput IsNot Nothing AndAlso controllerOutput.ContainsKey("operationStatus") AndAlso controllerOutput("operationStatus") IsNot Nothing, controllerOutput("operationStatus").ToString(), "FAILED")]</InArgument></Assign.Value>
+                </Assign>
+                <Assign DisplayName="Read Error">
+                  <Assign.To><OutArgument x:TypeArguments="x:String">[errorMessageLocal]</OutArgument></Assign.To>
+                  <Assign.Value><InArgument x:TypeArguments="x:String">[If(controllerOutput IsNot Nothing AndAlso controllerOutput.ContainsKey("errorMessage") AndAlso controllerOutput("errorMessage") IsNot Nothing, controllerOutput("errorMessage").ToString(), "")]</InArgument></Assign.Value>
+                </Assign>
+                <Assign DisplayName="Read Response Path">
+                  <Assign.To><OutArgument x:TypeArguments="x:String">[responseJsonPathLocal]</OutArgument></Assign.To>
+                  <Assign.Value><InArgument x:TypeArguments="x:String">[If(controllerOutput IsNot Nothing AndAlso controllerOutput.ContainsKey("responseJsonPath") AndAlso controllerOutput("responseJsonPath") IsNot Nothing, controllerOutput("responseJsonPath").ToString(), "")]</InArgument></Assign.Value>
+                </Assign>
+                <ias:Append_Line ErrorCode="{x:Null}" ContinueOnError="True" DisplayName="Log Final Summary" Line="[System.Environment.NewLine + &quot;InvoiceSampleGenerator Result:&quot; + System.Environment.NewLine + &quot;Status: &quot; + operationStatusLocal + If(String.IsNullOrWhiteSpace(responseJsonPathLocal), &quot;&quot;, System.Environment.NewLine + &quot;ResponseArtifact: &quot; + responseJsonPathLocal) + If(String.IsNullOrWhiteSpace(errorMessageLocal), &quot;&quot;, System.Environment.NewLine + &quot;Error: &quot; + errorMessageLocal)]" Source="[logFile]" />
+              </Sequence>
+            </If.Then>
+            <If.Else>
+              <Sequence DisplayName="Dialog Cancelled">
+                <Assign><Assign.To><OutArgument x:TypeArguments="x:Boolean">[dialogCancelled]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:Boolean">[True]</InArgument></Assign.Value></Assign>
+                <ias:Append_Line ErrorCode="{x:Null}" ContinueOnError="True" DisplayName="Log Cancellation" Line="[System.Environment.NewLine + &quot;InvoiceSampleGenerator: Operator cancelled input dialog.&quot;]" Source="[logFile]" />
+              </Sequence>
+            </If.Else>
+          </If>
+        </Sequence>
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="s:Exception">
+          <ActivityAction x:TypeArguments="s:Exception">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="s:Exception" Name="ex" />
+            </ActivityAction.Argument>
+            <Sequence DisplayName="Handle Exception">
+              <ias:Append_Line ErrorCode="{x:Null}" ContinueOnError="True" DisplayName="Log Exception" Line="[System.Environment.NewLine + &quot;EXCEPTION in MainPage:&quot; + System.Environment.NewLine + &quot;Message: &quot; + ex.Message + System.Environment.NewLine + &quot;StackTrace: &quot; + ex.StackTrace]" Source="[logFile]" />
+            </Sequence>
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+    </TryCatch>
+  </Sequence>
+</Activity>

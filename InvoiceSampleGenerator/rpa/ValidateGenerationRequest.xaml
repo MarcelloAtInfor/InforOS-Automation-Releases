@@ -1,0 +1,89 @@
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="RehostedWorkflowDesigner.Workflow"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:ias="clr-namespace:Infor.Activities.Sys;assembly=Infor.Activities.Sys"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities"
+ xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+ xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="projectPath" Type="InArgument(x:String)" />
+    <x:Property Name="requestJsonPath" Type="InArgument(x:String)" />
+    <x:Property Name="rendererScript" Type="InArgument(x:String)" />
+    <x:Property Name="logFile" Type="InArgument(x:String)" />
+    <x:Property Name="requestStatus" Type="OutArgument(x:String)" />
+    <x:Property Name="errorMessage" Type="OutArgument(x:String)" />
+  </x:Members>
+  <mva:VisualBasic.Settings><x:Null /></mva:VisualBasic.Settings>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System</x:String>
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>Microsoft.VisualBasic.Activities</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>Microsoft.VisualBasic</AssemblyReference>
+      <AssemblyReference>Infor.Activities.Sys</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="Validate Generation Request">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Name="validationScriptPath" />
+      <Variable x:TypeArguments="x:String" Name="validationResultPath" />
+      <Variable x:TypeArguments="x:String" Name="processArgs" />
+      <Variable x:TypeArguments="x:Object" Name="validationProcess" />
+      <Variable x:TypeArguments="x:Boolean" Name="validationExited" />
+      <Variable x:TypeArguments="x:Int32" Default="-1" Name="validationExitCode" />
+      <Variable x:TypeArguments="x:String" Name="validationOutputText" />
+    </Sequence.Variables>
+    <Assign DisplayName="Resolve Validation Script">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[validationScriptPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[projectPath + "\scripts\validate_request.ps1"]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Resolve Validation Result Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[validationResultPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[System.IO.Path.Combine(System.IO.Path.GetDirectoryName(logFile), "validation_result_" + System.Guid.NewGuid().ToString("N") + ".txt")]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Build Process Arguments">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[processArgs]</OutArgument></Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">["-ExecutionPolicy Bypass -File """ + validationScriptPath + """ -RequestJsonPath """ + requestJsonPath + """" + If(String.IsNullOrWhiteSpace(rendererScript), "", " -RendererScript """ + rendererScript + """") + " -ValidationResultPath """ + validationResultPath + """"]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ias:Append_Line ContinueOnError="True" ErrorCode="{x:Null}" DisplayName="Log Validation Start" Line="[System.Environment.NewLine + &quot;ValidateGenerationRequest:&quot; + System.Environment.NewLine + &quot;  Script: &quot; + validationScriptPath + System.Environment.NewLine + &quot;  Request: &quot; + requestJsonPath + System.Environment.NewLine + &quot;  ResultArtifact: &quot; + validationResultPath]" Source="[logFile]" />
+    <Assign DisplayName="Start Validation Process">
+      <Assign.To><OutArgument x:TypeArguments="x:Object">[validationProcess]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:Object">[System.Diagnostics.Process.Start(New System.Diagnostics.ProcessStartInfo() With {.FileName = "powershell.exe", .Arguments = processArgs, .CreateNoWindow = True, .WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden})]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Wait For Validation Exit">
+      <Assign.To><OutArgument x:TypeArguments="x:Boolean">[validationExited]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:Boolean">[If(validationProcess Is Nothing, False, CType(validationProcess, System.Diagnostics.Process).WaitForExit(120000))]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Capture Validation Exit Code">
+      <Assign.To><OutArgument x:TypeArguments="x:Int32">[validationExitCode]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:Int32">[If(validationProcess Is Nothing OrElse Not validationExited, -1, CType(validationProcess, System.Diagnostics.Process).ExitCode)]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Read Validation Artifact">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[validationOutputText]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(System.IO.File.Exists(validationResultPath), System.IO.File.ReadAllText(validationResultPath), "")]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set Request Status">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[requestStatus]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(validationExited AndAlso validationExitCode = 0, "VALID", "INVALID")]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set Validation Error">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[errorMessage]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(requestStatus = "VALID", "", If(Not validationExited, "Validation process timed out after 120 seconds.", If(String.IsNullOrWhiteSpace(validationOutputText), "Request validation failed.", validationOutputText)))]</InArgument></Assign.Value>
+    </Assign>
+    <ias:Append_Line ContinueOnError="True" ErrorCode="{x:Null}" DisplayName="Log Validation Result" Line="[System.Environment.NewLine + &quot;ValidateGenerationRequest Result:&quot; + System.Environment.NewLine + &quot;  Status: &quot; + requestStatus + System.Environment.NewLine + &quot;  ExitCode: &quot; + validationExitCode.ToString() + System.Environment.NewLine + &quot;  ResultArtifact: &quot; + validationResultPath + If(requestStatus = &quot;VALID&quot; AndAlso Not String.IsNullOrWhiteSpace(validationOutputText), System.Environment.NewLine + &quot;  Summary: &quot; + validationOutputText, &quot;&quot;) + If(String.IsNullOrWhiteSpace(errorMessage), &quot;&quot;, System.Environment.NewLine + &quot;  Error: &quot; + errorMessage)]" Source="[logFile]" />
+  </Sequence>
+</Activity>

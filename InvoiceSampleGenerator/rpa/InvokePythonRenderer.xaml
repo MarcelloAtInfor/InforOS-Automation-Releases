@@ -1,0 +1,94 @@
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="RehostedWorkflowDesigner.Workflow"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:ias="clr-namespace:Infor.Activities.Sys;assembly=Infor.Activities.Sys"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities"
+ xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+ xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="projectPath" Type="InArgument(x:String)" />
+    <x:Property Name="requestJsonPath" Type="InArgument(x:String)" />
+    <x:Property Name="rendererScript" Type="InArgument(x:String)" />
+    <x:Property Name="logFile" Type="InArgument(x:String)" />
+    <x:Property Name="operationStatus" Type="OutArgument(x:String)" />
+    <x:Property Name="errorMessage" Type="OutArgument(x:String)" />
+    <x:Property Name="responseJson" Type="OutArgument(x:String)" />
+    <x:Property Name="responseJsonPath" Type="OutArgument(x:String)" />
+  </x:Members>
+  <mva:VisualBasic.Settings><x:Null /></mva:VisualBasic.Settings>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System</x:String>
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>Microsoft.VisualBasic.Activities</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>Microsoft.VisualBasic</AssemblyReference>
+      <AssemblyReference>Infor.Activities.Sys</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="Invoke Python Renderer">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Name="wrapperScriptPath" />
+      <Variable x:TypeArguments="x:String" Name="responseJsonArtifactPath" />
+      <Variable x:TypeArguments="x:String" Name="processArgs" />
+      <Variable x:TypeArguments="x:Object" Name="rendererProcess" />
+      <Variable x:TypeArguments="x:Boolean" Name="rendererExited" />
+      <Variable x:TypeArguments="x:Int32" Name="rendererExitCode" Default="-1" />
+    </Sequence.Variables>
+    <Assign DisplayName="Resolve Wrapper Script">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[wrapperScriptPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[projectPath + "\scripts\invoke_renderer.ps1"]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Resolve Response Artifact Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[responseJsonArtifactPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[System.IO.Path.Combine(System.IO.Path.GetDirectoryName(logFile), "renderer_response_" + System.Guid.NewGuid().ToString("N") + ".json")]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Build Process Arguments">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[processArgs]</OutArgument></Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">["-ExecutionPolicy Bypass -File """ + wrapperScriptPath + """ -RequestJsonPath """ + requestJsonPath + """" + If(String.IsNullOrWhiteSpace(rendererScript), "", " -RendererScript """ + rendererScript + """") + " -ResponseJsonPath """ + responseJsonArtifactPath + """"]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ias:Append_Line ContinueOnError="True" ErrorCode="{x:Null}" DisplayName="Log Renderer Start" Line="[System.Environment.NewLine + &quot;InvokePythonRenderer:&quot; + System.Environment.NewLine + &quot;  Wrapper: &quot; + wrapperScriptPath + System.Environment.NewLine + &quot;  Request: &quot; + requestJsonPath + System.Environment.NewLine + &quot;  ResponseArtifact: &quot; + responseJsonArtifactPath]" Source="[logFile]" />
+    <Assign DisplayName="Start PowerShell Renderer Process">
+      <Assign.To><OutArgument x:TypeArguments="x:Object">[rendererProcess]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:Object">[System.Diagnostics.Process.Start(New System.Diagnostics.ProcessStartInfo() With {.FileName = "powershell.exe", .Arguments = processArgs, .CreateNoWindow = True, .WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden})]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Wait For Renderer Exit">
+      <Assign.To><OutArgument x:TypeArguments="x:Boolean">[rendererExited]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:Boolean">[If(rendererProcess Is Nothing, False, CType(rendererProcess, System.Diagnostics.Process).WaitForExit(600000))]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Capture Exit Code">
+      <Assign.To><OutArgument x:TypeArguments="x:Int32">[rendererExitCode]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:Int32">[If(rendererProcess Is Nothing OrElse Not rendererExited, -1, CType(rendererProcess, System.Diagnostics.Process).ExitCode)]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set Operation Status">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[operationStatus]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(Not rendererExited, "TIMED_OUT", If(rendererExitCode = 0, "SUCCEEDED", "FAILED"))]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set Error Message">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[errorMessage]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(Not rendererExited, "Renderer process timed out after 600 seconds.", If(rendererExitCode = 0, "", "Renderer process failed with exit code " + rendererExitCode.ToString()))]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Expose Response Artifact Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[responseJsonPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[responseJsonArtifactPath]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Read Response Artifact">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[responseJson]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(System.IO.File.Exists(responseJsonArtifactPath), System.IO.File.ReadAllText(responseJsonArtifactPath), "")]</InArgument></Assign.Value>
+    </Assign>
+    <ias:Append_Line ContinueOnError="True" ErrorCode="{x:Null}" DisplayName="Log Renderer Result" Line="[System.Environment.NewLine + &quot;InvokePythonRenderer Result:&quot; + System.Environment.NewLine + &quot;  Status: &quot; + operationStatus + System.Environment.NewLine + &quot;  ExitCode: &quot; + rendererExitCode.ToString() + System.Environment.NewLine + &quot;  ResponseArtifact: &quot; + responseJsonArtifactPath + If(String.IsNullOrWhiteSpace(errorMessage), &quot;&quot;, System.Environment.NewLine + &quot;  Error: &quot; + errorMessage)]" Source="[logFile]" />
+  </Sequence>
+</Activity>

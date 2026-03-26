@@ -1,0 +1,132 @@
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="RehostedWorkflowDesigner.Workflow"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:iai="clr-namespace:Infor.Activities.IONAPI;assembly=Infor.Activities.IONAPI"
+ xmlns:ias="clr-namespace:Infor.Activities.Sys;assembly=Infor.Activities.Sys"
+ xmlns:iru="clr-namespace:Infor.RPA.Utilities;assembly=Infor.RPA.Utilities"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities"
+ xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json"
+ xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+ xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+ xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="tenantURL" Type="InArgument(x:String)" />
+    <x:Property Name="site" Type="InArgument(x:String)" />
+    <x:Property Name="idoName" Type="InArgument(x:String)" />
+    <x:Property Name="properties" Type="InArgument(x:String)" />
+    <x:Property Name="filter" Type="InArgument(x:String)" />
+    <x:Property Name="orderBy" Type="InArgument(x:String)" />
+    <x:Property Name="recordCap" Type="InArgument(x:String)" />
+    <x:Property Name="logFile" Type="InArgument(x:String)" />
+    <x:Property Name="responseJson" Type="OutArgument(x:String)" />
+    <x:Property Name="operationStatus" Type="OutArgument(x:String)" />
+    <x:Property Name="errorMessage" Type="OutArgument(x:String)" />
+  </x:Members>
+  <mva:VisualBasic.Settings><x:Null /></mva:VisualBasic.Settings>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System</x:String>
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>Microsoft.VisualBasic.Activities</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>Infor.RPA.Utilities</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>Microsoft.VisualBasic</AssemblyReference>
+      <AssemblyReference>Infor.RPA.Utilities</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="Execute IDO Load">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Name="requestUrl" />
+      <Variable x:TypeArguments="iru:ResponseObject" Name="apiResponse" />
+      <Variable x:TypeArguments="x:Int32" Name="apiResponseCode" />
+      <Variable x:TypeArguments="njl:JObject" Name="parsed" />
+      <Variable x:TypeArguments="x:Boolean" Name="bodySuccessFlag" Default="True" />
+      <Variable x:TypeArguments="x:String" Name="bodyMessage" />
+    </Sequence.Variables>
+    <Assign DisplayName="Init Status">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[operationStatus]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">["PENDING"]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Init Error">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[errorMessage]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[""]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Init Body Message">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[bodyMessage]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[""]</InArgument></Assign.Value>
+    </Assign>
+    <Assign DisplayName="Build Request URL">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[requestUrl]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[tenantURL.TrimEnd("/"c)+"/CSI/IDORequestService/ido/load/"+idoName+"?properties="+System.Uri.EscapeDataString(properties)+"&amp;recordCap="+If(String.IsNullOrWhiteSpace(recordCap), "100", recordCap)+If(String.IsNullOrWhiteSpace(filter), "", "&amp;filter="+System.Uri.EscapeDataString(filter))+If(String.IsNullOrWhiteSpace(orderBy), "", "&amp;orderby="+System.Uri.EscapeDataString(orderBy))]</InArgument></Assign.Value>
+    </Assign>
+    <ias:Append_Line ContinueOnError="True" ErrorCode="{x:Null}" DisplayName="Log IDO Load Start" Line="[System.Environment.NewLine+&quot;  ExecuteIdoLoad: &quot;+idoName+&quot; - URL: &quot;+requestUrl]" Source="[logFile]" />
+    <iai:IONAPIRequestWizard FileAttachments="{x:Null}" PostData="{x:Null}" StatusCode="{x:Null}" ContentType="application_json" ContinueOnError="True" DisplayName="GET IDO Load" HttpMethod="GET" Response="[apiResponse]" ResponseCode="[apiResponseCode]" Url="[requestUrl]">
+      <iai:IONAPIRequestWizard.Headers>
+        <scg:List x:TypeArguments="scg:List(x:String)" Capacity="4">
+          <scg:List x:TypeArguments="x:String" Capacity="1">
+            <x:String>X-Infor-MongooseConfig</x:String>
+          </scg:List>
+          <scg:List x:TypeArguments="x:String" Capacity="1">
+            <x:String>[site]</x:String>
+          </scg:List>
+        </scg:List>
+      </iai:IONAPIRequestWizard.Headers>
+    </iai:IONAPIRequestWizard>
+    <Assign DisplayName="Set Response Json">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[responseJson]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[If(apiResponse Is Nothing, "", apiResponse.readastext)]</InArgument></Assign.Value>
+    </Assign>
+    <If Condition="[Not String.IsNullOrWhiteSpace(responseJson) AndAlso responseJson.TrimStart().StartsWith(&quot;{&quot;)]" DisplayName="Parse JSON Body">
+      <If.Then>
+        <Sequence DisplayName="Read Body Flags">
+          <Assign DisplayName="Parse Body JSON">
+            <Assign.To><OutArgument x:TypeArguments="njl:JObject">[parsed]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="njl:JObject">[JObject.Parse(responseJson)]</InArgument></Assign.Value>
+          </Assign>
+          <Assign DisplayName="Read Body Success">
+            <Assign.To><OutArgument x:TypeArguments="x:Boolean">[bodySuccessFlag]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="x:Boolean">[If(parsed("Success") IsNot Nothing, CBool(parsed("Success").ToString()), True)]</InArgument></Assign.Value>
+          </Assign>
+          <Assign DisplayName="Read Body Message">
+            <Assign.To><OutArgument x:TypeArguments="x:String">[bodyMessage]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="x:String">[If(parsed("Message") IsNot Nothing, parsed("Message").ToString(), "")]</InArgument></Assign.Value>
+          </Assign>
+        </Sequence>
+      </If.Then>
+    </If>
+    <If Condition="[apiResponseCode &gt;= 200 AndAlso apiResponseCode &lt; 300 AndAlso (apiResponse Is Nothing OrElse Not apiResponse.readastext.StartsWith(&quot;Code:&quot;)) AndAlso bodySuccessFlag AndAlso Not (Not String.IsNullOrWhiteSpace(responseJson) AndAlso responseJson.Contains(&quot;&quot;&quot;error&quot;&quot;&quot;))]" DisplayName="Check Load Success">
+      <If.Then>
+        <Assign DisplayName="Set Success">
+          <Assign.To><OutArgument x:TypeArguments="x:String">[operationStatus]</OutArgument></Assign.To>
+          <Assign.Value><InArgument x:TypeArguments="x:String">["SUCCESS"]</InArgument></Assign.Value>
+        </Assign>
+      </If.Then>
+      <If.Else>
+        <Sequence DisplayName="Handle Failure">
+          <Assign DisplayName="Set Failed">
+            <Assign.To><OutArgument x:TypeArguments="x:String">[operationStatus]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="x:String">["FAILED"]</InArgument></Assign.Value>
+          </Assign>
+          <Assign DisplayName="Set Error Message">
+            <Assign.To><OutArgument x:TypeArguments="x:String">[errorMessage]</OutArgument></Assign.To>
+            <Assign.Value><InArgument x:TypeArguments="x:String">[If(apiResponseCode &gt;= 200 AndAlso apiResponseCode &lt; 300 AndAlso Not String.IsNullOrWhiteSpace(bodyMessage), "IDO load failed: "+bodyMessage, "IDO load failed with code "+apiResponseCode.ToString()+": "+If(apiResponse Is Nothing, "No response", apiResponse.readastext))]</InArgument></Assign.Value>
+          </Assign>
+        </Sequence>
+      </If.Else>
+    </If>
+  </Sequence>
+</Activity>

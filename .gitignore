@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# RPA Deploy (tenant-specific, regenerated per user)
+.deploy/
+deploy.local.json
+deploy.local.*.json
+!deploy.local.example.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Dev agent files (not relevant for end users)
+.kiro/
+.claude/

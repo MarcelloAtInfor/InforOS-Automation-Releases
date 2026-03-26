@@ -1,0 +1,129 @@
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="RehostedWorkflowDesigner.Workflow"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:ias="clr-namespace:Infor.Activities.Sys;assembly=Infor.Activities.Sys"
+ xmlns:iaw="clr-namespace:Infor.Activities.Workflow;assembly=Infor.Activities.Workflow"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities"
+ xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+ xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+ xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
+ xmlns:s="clr-namespace:System;assembly=mscorlib"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="projectPath" Type="InArgument(x:String)" />
+    <x:Property Name="requestJsonPath" Type="InArgument(x:String)" />
+    <x:Property Name="tenantURL" Type="InArgument(x:String)" />
+    <x:Property Name="site" Type="InArgument(x:String)" />
+    <x:Property Name="rendererScript" Type="InArgument(x:String)" />
+    <x:Property Name="logFile" Type="InArgument(x:String)" />
+    <x:Property Name="responseJson" Type="OutArgument(x:String)" />
+    <x:Property Name="responseJsonPath" Type="OutArgument(x:String)" />
+    <x:Property Name="operationStatus" Type="OutArgument(x:String)" />
+    <x:Property Name="errorMessage" Type="OutArgument(x:String)" />
+  </x:Members>
+  <mva:VisualBasic.Settings><x:Null /></mva:VisualBasic.Settings>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System</x:String>
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>Microsoft.VisualBasic.Activities</x:String>
+      <x:String>System.Collections.Generic</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <Sequence DisplayName="Process Generation Request">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="scg:IDictionary(x:String, x:Object)" Name="validateOutput" />
+      <Variable x:TypeArguments="scg:IDictionary(x:String, x:Object)" Name="csiOutput" />
+      <Variable x:TypeArguments="scg:IDictionary(x:String, x:Object)" Name="invokeOutput" />
+      <Variable x:TypeArguments="scg:IDictionary(x:String, x:Object)" Name="summaryOutput" />
+      <Variable x:TypeArguments="x:String" Name="requestStatusLocal" />
+      <Variable x:TypeArguments="x:String" Name="validationErrorLocal" />
+      <Variable x:TypeArguments="x:String" Name="effectiveRequestJsonPath" />
+      <Variable x:TypeArguments="x:String" Name="csiStatusLocal" />
+      <Variable x:TypeArguments="x:String" Name="rendererStatusLocal" />
+      <Variable x:TypeArguments="x:String" Name="rendererErrorLocal" />
+      <Variable x:TypeArguments="x:String" Name="rendererResponseJsonLocal" />
+      <Variable x:TypeArguments="x:String" Name="rendererResponseJsonPathLocal" />
+    </Sequence.Variables>
+    <TryCatch DisplayName="ProcessRequest Try-Catch">
+      <TryCatch.Try>
+        <Sequence DisplayName="Main Logic">
+    <!-- Step 1: Validate -->
+    <iaw:InvokeWorkflow ResponseCode="{x:Null}" Arguments="[New Dictionary(Of String, Object) From {{&quot;projectPath&quot;, projectPath}, {&quot;requestJsonPath&quot;, requestJsonPath}, {&quot;rendererScript&quot;, rendererScript}, {&quot;logFile&quot;, logFile}}]" ContinueOnError="False" DisplayName="Validate Generation Request" OutputArguments="[validateOutput]" WorkflowFile="[projectPath + &quot;\ValidateGenerationRequest.xaml&quot;]" />
+    <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[requestStatusLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(validateOutput IsNot Nothing AndAlso validateOutput.ContainsKey("requestStatus") AndAlso validateOutput("requestStatus") IsNot Nothing, validateOutput("requestStatus").ToString(), "INVALID")]</InArgument></Assign.Value></Assign>
+    <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[validationErrorLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(validateOutput IsNot Nothing AndAlso validateOutput.ContainsKey("errorMessage") AndAlso validateOutput("errorMessage") IsNot Nothing, validateOutput("errorMessage").ToString(), "Validation failed.")]</InArgument></Assign.Value></Assign>
+
+    <!-- Default effective request to original -->
+    <Assign DisplayName="Init Effective Request Path">
+      <Assign.To><OutArgument x:TypeArguments="x:String">[effectiveRequestJsonPath]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:String">[requestJsonPath]</InArgument></Assign.Value>
+    </Assign>
+
+    <If Condition="[requestStatusLocal = &quot;VALID&quot;]" DisplayName="If Request Valid">
+      <If.Then>
+        <Sequence DisplayName="Valid Request Branch">
+
+          <!-- Step 2: CSI Resolution (if tenantURL configured) -->
+          <If Condition="[Not String.IsNullOrWhiteSpace(tenantURL)]" DisplayName="If CSI Configured">
+            <If.Then>
+              <Sequence DisplayName="CSI Resolution Branch">
+                <iaw:InvokeWorkflow ResponseCode="{x:Null}" Arguments="[New Dictionary(Of String, Object) From {{&quot;projectPath&quot;, projectPath}, {&quot;tenantURL&quot;, tenantURL}, {&quot;site&quot;, site}, {&quot;requestJsonPath&quot;, requestJsonPath}, {&quot;logFile&quot;, logFile}}]" ContinueOnError="True" DisplayName="Resolve CSI Data" OutputArguments="[csiOutput]" WorkflowFile="[projectPath + &quot;\ResolveCSIData.xaml&quot;]" />
+                <Assign DisplayName="Read CSI Status">
+                  <Assign.To><OutArgument x:TypeArguments="x:String">[csiStatusLocal]</OutArgument></Assign.To>
+                  <Assign.Value><InArgument x:TypeArguments="x:String">[If(csiOutput IsNot Nothing AndAlso csiOutput.ContainsKey("operationStatus"), csiOutput("operationStatus").ToString(), "SKIPPED")]</InArgument></Assign.Value>
+                </Assign>
+                <Assign DisplayName="Read Enriched Request Path">
+                  <Assign.To><OutArgument x:TypeArguments="x:String">[effectiveRequestJsonPath]</OutArgument></Assign.To>
+                  <Assign.Value><InArgument x:TypeArguments="x:String">[If(csiOutput IsNot Nothing AndAlso csiOutput.ContainsKey("enrichedRequestJsonPath") AndAlso Not String.IsNullOrWhiteSpace(csiOutput("enrichedRequestJsonPath").ToString()), csiOutput("enrichedRequestJsonPath").ToString(), requestJsonPath)]</InArgument></Assign.Value>
+                </Assign>
+              </Sequence>
+            </If.Then>
+          </If>
+
+          <!-- Step 3: Render (using enriched or original request) -->
+          <iaw:InvokeWorkflow ResponseCode="{x:Null}" Arguments="[New Dictionary(Of String, Object) From {{&quot;projectPath&quot;, projectPath}, {&quot;requestJsonPath&quot;, effectiveRequestJsonPath}, {&quot;rendererScript&quot;, rendererScript}, {&quot;logFile&quot;, logFile}}]" ContinueOnError="False" DisplayName="Invoke Python Renderer" OutputArguments="[invokeOutput]" WorkflowFile="[projectPath + &quot;\InvokePythonRenderer.xaml&quot;]" />
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererStatusLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(invokeOutput IsNot Nothing AndAlso invokeOutput.ContainsKey("operationStatus") AndAlso invokeOutput("operationStatus") IsNot Nothing, invokeOutput("operationStatus").ToString(), "FAILED")]</InArgument></Assign.Value></Assign>
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererErrorLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(invokeOutput IsNot Nothing AndAlso invokeOutput.ContainsKey("errorMessage") AndAlso invokeOutput("errorMessage") IsNot Nothing, invokeOutput("errorMessage").ToString(), "")]</InArgument></Assign.Value></Assign>
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererResponseJsonLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(invokeOutput IsNot Nothing AndAlso invokeOutput.ContainsKey("responseJson") AndAlso invokeOutput("responseJson") IsNot Nothing, invokeOutput("responseJson").ToString(), "")]</InArgument></Assign.Value></Assign>
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererResponseJsonPathLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(invokeOutput IsNot Nothing AndAlso invokeOutput.ContainsKey("responseJsonPath") AndAlso invokeOutput("responseJsonPath") IsNot Nothing, invokeOutput("responseJsonPath").ToString(), "")]</InArgument></Assign.Value></Assign>
+        </Sequence>
+      </If.Then>
+      <If.Else>
+        <Sequence DisplayName="Invalid Request Branch">
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererStatusLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">["FAILED"]</InArgument></Assign.Value></Assign>
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererErrorLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[validationErrorLocal]</InArgument></Assign.Value></Assign>
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererResponseJsonLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[""]</InArgument></Assign.Value></Assign>
+          <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[rendererResponseJsonPathLocal]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[""]</InArgument></Assign.Value></Assign>
+        </Sequence>
+      </If.Else>
+    </If>
+
+    <!-- Step 4: Build Summary -->
+    <iaw:InvokeWorkflow ResponseCode="{x:Null}" Arguments="[New Dictionary(Of String, Object) From {{&quot;requestJsonPath&quot;, requestJsonPath}, {&quot;rendererStatus&quot;, rendererStatusLocal}, {&quot;rendererError&quot;, rendererErrorLocal}, {&quot;rendererResponseJson&quot;, rendererResponseJsonLocal}, {&quot;rendererResponseJsonPath&quot;, rendererResponseJsonPathLocal}, {&quot;logFile&quot;, logFile}}]" ContinueOnError="False" DisplayName="Build Run Summary" OutputArguments="[summaryOutput]" WorkflowFile="[projectPath + &quot;\BuildRunSummary.xaml&quot;]" />
+    <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[operationStatus]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(summaryOutput IsNot Nothing AndAlso summaryOutput.ContainsKey("operationStatus") AndAlso summaryOutput("operationStatus") IsNot Nothing, summaryOutput("operationStatus").ToString(), rendererStatusLocal)]</InArgument></Assign.Value></Assign>
+    <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[errorMessage]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(summaryOutput IsNot Nothing AndAlso summaryOutput.ContainsKey("errorMessage") AndAlso summaryOutput("errorMessage") IsNot Nothing, summaryOutput("errorMessage").ToString(), rendererErrorLocal)]</InArgument></Assign.Value></Assign>
+    <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[responseJsonPath]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(summaryOutput IsNot Nothing AndAlso summaryOutput.ContainsKey("responseJsonPath") AndAlso summaryOutput("responseJsonPath") IsNot Nothing, summaryOutput("responseJsonPath").ToString(), rendererResponseJsonPathLocal)]</InArgument></Assign.Value></Assign>
+    <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[responseJson]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[If(summaryOutput IsNot Nothing AndAlso summaryOutput.ContainsKey("responseJson") AndAlso summaryOutput("responseJson") IsNot Nothing, summaryOutput("responseJson").ToString(), "{}")]</InArgument></Assign.Value></Assign>
+    <ias:Append_Line ContinueOnError="True" ErrorCode="{x:Null}" DisplayName="Log Process Result" Line="[System.Environment.NewLine + &quot;ProcessGenerationRequest Result:&quot; + System.Environment.NewLine + &quot;  Status: &quot; + operationStatus + If(String.IsNullOrWhiteSpace(responseJsonPath), &quot;&quot;, System.Environment.NewLine + &quot;  ResponseArtifact: &quot; + responseJsonPath) + If(String.IsNullOrWhiteSpace(errorMessage), &quot;&quot;, System.Environment.NewLine + &quot;  Error: &quot; + errorMessage)]" Source="[logFile]" />
+        </Sequence>
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="s:Exception">
+          <ActivityAction x:TypeArguments="s:Exception">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="s:Exception" Name="ex" />
+            </ActivityAction.Argument>
+            <Sequence DisplayName="Handle Exception">
+              <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[operationStatus]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">["FAILED"]</InArgument></Assign.Value></Assign>
+              <Assign><Assign.To><OutArgument x:TypeArguments="x:String">[errorMessage]</OutArgument></Assign.To><Assign.Value><InArgument x:TypeArguments="x:String">[ex.Message]</InArgument></Assign.Value></Assign>
+              <ias:Append_Line ErrorCode="{x:Null}" ContinueOnError="True" DisplayName="Log Exception" Line="[System.Environment.NewLine + &quot;EXCEPTION in ProcessGenerationRequest:&quot; + System.Environment.NewLine + &quot;Message: &quot; + ex.Message + System.Environment.NewLine + &quot;StackTrace: &quot; + ex.StackTrace]" Source="[logFile]" />
+            </Sequence>
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+    </TryCatch>
+  </Sequence>
+</Activity>
