@@ -42,20 +42,13 @@ Each project folder follows this layout:
 ```
 ProjectName/
 ├── README.md                  # Deployment guide (start here)
-├── rpa/                       # RPA project (import into Studio)
-│   ├── *.xaml                 # Workflow files
-│   ├── project.json           # RPA project manifest
-│   ├── config/                # Default request configs
-│   ├── scripts/               # Helper scripts invoked by workflows
-│   └── deploy.local.example.json  # Tenant config template
-├── scripts/                   # Standalone scripts (if applicable)
-├── idp/                       # IDP document processing flows (if applicable)
-├── ion/                       # ION workflow definitions (if applicable)
-├── genai/                     # GenAI agent/tool specs (if applicable)
-└── samples/                   # Example inputs/outputs for reference
+├── ProjectName.zip            # Import into the appropriate Infor tool
+└── samples/                   # Example inputs/outputs for reference (if applicable)
 ```
 
-Not every project uses every folder — only what's relevant is included.
+The zip is the deliverable. It contains everything needed to deploy — RPA workflows, scripts, configs — in the format the target tool expects for import.
+
+Not every project uses every asset type. Projects with multiple components (e.g., RPA + IDP + ION) may include multiple zips.
 
 ## Release Notes
 

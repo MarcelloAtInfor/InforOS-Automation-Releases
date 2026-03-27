@@ -19,63 +19,53 @@ Deterministic invoice PDF generator for Infor CloudSuite Industrial. Produces re
 | Python 3.11+ | Must be installed and in the system PATH on the machine that runs the RPA process |
 | Google Chrome or Microsoft Edge | For browser-backed PDF rendering |
 
-Python package `reportlab` is also required:
+Python package `reportlab` is also required. Run once on the target machine:
 ```cmd
 pip install reportlab
 ```
 
-> If Python is not installed when the process runs, the workflow will return a clear error message indicating Python is required.
+> If Python is not installed when the process runs, the workflow will display a clear error message with installation instructions.
 
 ## Deployment
 
 ### Step 1: Download
 
-Download the `InvoiceSampleGenerator/` folder from this repo. You need both:
-- `rpa/` — the RPA project
-- `scripts/` — Python scripts invoked by the RPA workflows
-
-Place them together in a known location on the target machine:
-```
-C:\InforRPA\InvoiceSampleGenerator\
-├── rpa\
-├── scripts\
-└── samples\
-```
+Download `InvoiceSampleGenerator.zip` from this folder.
 
 ### Step 2: Import into RPA Studio
 
 1. Open **Infor RPA Studio**
 2. Select **File > Import**
 3. Select `InvoiceSampleGenerator.zip`
-4. Choose where to extract the project on your machine
-5. Studio will open the project with all workflows loaded
+4. Choose where to extract the project (e.g., `C:\InforRPA\`)
+5. Studio extracts and opens the project — all workflows and scripts are included
 
 ### Step 3: Configure Input Arguments
 
-The project uses input arguments that you configure either in Studio (for local testing) or on the tenant (after publishing). Set these values:
+Set these values in Studio (for local testing) or on the tenant after publishing (as process arguments):
 
 | Argument | What to Set | Example |
 |----------|-------------|---------|
-| `configurationFolder` | Folder where logs and output files are written | `C:\InforRPA\InvoiceSampleGenerator` |
+| `configurationFolder` | The folder where Studio extracted the project | `C:\InforRPA\InvoiceSampleGenerator` |
 | `tenantURL` | Your Infor OS Mingle API base URL (blank = skip CSI lookups) | `https://mingle-ionapi.inforcloudsuite.com/ACME_PRD/` |
 | `site` | Your CSI site code | `ACME_PRD_MAIN` |
 | `enableDebugMode` | Verbose logging (optional) | `True` or `False` |
 
-> **Tip:** If you leave `tenantURL` blank, the generator runs in fully synthetic mode — no tenant connection needed. This is useful for testing the flow before connecting to a live environment.
+> **Tip:** Leave `tenantURL` blank to run in fully synthetic mode — no tenant connection needed. Useful for testing before connecting to a live environment.
 
 ### Step 4: Publish to Your Tenant
 
 1. In RPA Studio, select **Publish**
 2. Choose your target tenant
 3. After publishing, configure the input arguments on the tenant:
-   - Set `configurationFolder`, `tenantURL`, and `site` as **process arguments** with your tenant-specific values
-   - Set any generation parameters (document count, line count, etc.) as **user arguments** if you want operators to control them at runtime
+   - Set `configurationFolder`, `tenantURL`, and `site` as **process arguments**
+   - Set generation parameters (document count, line count, etc.) as **user arguments** if operators should control them at runtime
 
 ### Step 5: Run
 
-**From the tenant:** Trigger the published process. The operator will see an input dialog for generation parameters (document count, PO/non-PO mode, vendor/item selection, etc.).
+**From the tenant:** Trigger the published process. The operator sees an input dialog for generation parameters.
 
-**From Studio (local testing):** Open `MainPage.xaml` and click Run. Fill in the input dialog when prompted.
+**From Studio (local testing):** Open `MainPage.xaml` and click Run.
 
 Generated PDFs and a `manifest.json` appear in the configured output folder.
 
@@ -101,20 +91,12 @@ These are the operator-facing inputs shown at runtime:
 
 See `samples/` for complete request examples.
 
-## Verification
-
-After a successful run:
-
-1. Check the output folder for PDF files and a `manifest.json`
-2. Open a PDF — should look like a realistic invoice with vendor info, line items, and totals
-3. The manifest lists all generated documents with their metadata (vendor, items, amounts)
-
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | "Python is not installed" error | Install Python 3.11+ and ensure `python` is in the system PATH |
-| "reportlab not found" error | Run `pip install reportlab` |
+| "reportlab not found" error | Run `pip install reportlab` on the target machine |
 | Browser rendering fails | Ensure Chrome or Edge is installed on the machine |
 | CSI lookup timeout | Verify `tenantURL` is correct and the tenant is accessible |
 | No output generated | Check `configurationFolder` is set and the folder exists with write permissions |
@@ -123,24 +105,14 @@ After a successful run:
 
 ```
 InvoiceSampleGenerator/
-├── README.md              # This file
-├── rpa/                   # RPA project — open in Studio
-│   ├── MainPage.xaml      # Root workflow
-│   ├── *.xaml             # Supporting workflows
-│   ├── project.json       # RPA project manifest
-│   ├── config/            # Default request configurations
-│   └── scripts/           # PowerShell helpers used by workflows
-├── scripts/               # Python rendering and validation
-│   ├── render_invoice_batch.py    # Core PDF renderer
-│   ├── build_request.py           # Request JSON builder
-│   ├── csi_lookup.py              # Live CSI data resolution
-│   ├── render_with_csi.py         # CSI-enabled rendering wrapper
-│   ├── validate_invoice_math.py   # Math verification
-│   └── validate_determinism.py    # Reproducibility verification
-└── samples/               # Example request files
-    ├── po_sample_request.json      # PO-based invoice request
-    └── non_po_sample_request.json  # Non-PO invoice request
+├── README.md                      # This file
+├── InvoiceSampleGenerator.zip     # Import this into RPA Studio
+└── samples/                       # Example request files for reference
+    ├── po_sample_request.json
+    └── non_po_sample_request.json
 ```
+
+The zip contains the complete RPA project and all Python scripts. After import, everything is in one folder on your machine.
 
 ## Source Code
 
