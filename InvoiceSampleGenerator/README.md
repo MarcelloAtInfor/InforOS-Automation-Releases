@@ -42,11 +42,13 @@ C:\InforRPA\InvoiceSampleGenerator\
 └── samples\
 ```
 
-### Step 2: Open in RPA Studio
+### Step 2: Import into RPA Studio
 
 1. Open **Infor RPA Studio**
-2. Open the `rpa/` folder as a project
-3. You should see `MainPage.xaml` as the root workflow
+2. Select **File > Import**
+3. Select `InvoiceSampleGenerator.zip`
+4. Choose where to extract the project on your machine
+5. Studio will open the project with all workflows loaded
 
 ### Step 3: Configure Input Arguments
 
