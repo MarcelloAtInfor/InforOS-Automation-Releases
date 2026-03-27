@@ -8,6 +8,17 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# --- Python availability check ---
+try {
+    $null = & $PythonExe --version 2>&1
+} catch {
+    $msg = "Python is not installed or not in the system PATH. " +
+           "This project requires Python 3.11 or later. " +
+           "Install Python from https://www.python.org/downloads/ and ensure 'python' is in your PATH. " +
+           "Contact your administrator for support."
+    throw $msg
+}
+
 # Resolve renderer script path
 if ([string]::IsNullOrWhiteSpace($RendererScript)) {
     $shellProjectRoot = Split-Path -Parent $PSScriptRoot

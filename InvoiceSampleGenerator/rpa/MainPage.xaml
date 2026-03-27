@@ -1,4 +1,4 @@
-<Activity mc:Ignorable="sap sap2010 sads" x:Class="RehostedWorkflowDesigner.Workflow" this:Workflow.configurationFolder="C:\InforRPA\InvoiceSampleGenerator" this:Workflow.tenantURL="" this:Workflow.site="" this:Workflow.enableDebugMode="True"
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="RehostedWorkflowDesigner.Workflow" this:Workflow.configurationFolder="C:\InforRPA\InvoiceSampleGenerator" this:Workflow.tenantURL="https://mingle-ionapi.inforcloudsuite.com/SLSGDENA052_DEM/" this:Workflow.site="SLSGDENA052_DEM_DALS" this:Workflow.enableDebugMode="True"
  xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
  xmlns:ias="clr-namespace:Infor.Activities.Sys;assembly=Infor.Activities.Sys"
  xmlns:iaw="clr-namespace:Infor.Activities.Workflow;assembly=Infor.Activities.Workflow"
@@ -42,8 +42,8 @@
   <Sequence DisplayName="InvoiceSampleGenerator - Main">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:String" Default="[Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)+&quot;\AppData\Local\InforRPA\InvoiceSampleGenerator&quot;]" Name="projectPathCache" />
-      <Variable x:TypeArguments="x:String" Default="" Name="projectPathSource" />
-      <Variable x:TypeArguments="x:String" Default="" Name="repoRoot" />
+      <Variable x:TypeArguments="x:String" Default="[configurationFolder + &quot;\RPA\InvoiceSampleGenerator&quot;]" Name="projectPathSource" />
+      <Variable x:TypeArguments="x:String" Default="[configurationFolder]" Name="repoRoot" />
       <Variable x:TypeArguments="x:String" Name="projectPath" />
       <Variable x:TypeArguments="x:String" Name="rendererScript" />
       <Variable x:TypeArguments="x:String" Name="defaultRequestJsonPath" />
