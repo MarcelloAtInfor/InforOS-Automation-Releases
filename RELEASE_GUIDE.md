@@ -15,9 +15,8 @@ How to package a development project for the release repo. Follow this when addi
 
 | Asset Type | What to Copy | Notes |
 |------------|-------------|-------|
-| RPA project | `*.xaml`, `project.json`, `config/`, `scripts/` | The importable project |
-| Deploy template | `deploy.local.example.json` | Placeholders only, never real values |
-| Python scripts | Core scripts needed at runtime | Skip dev-only scripts (test harnesses, build tools) |
+| RPA project | `*.xaml`, `project.json`, `config/`, runtime `scripts/` | The importable project |
+| Python scripts | Core scripts needed at runtime | Skip dev-only scripts (deploy tools, test harnesses) |
 | IDP models | Exported DPF JSON files | Ready to upload to IDP |
 | ION workflows | Workflow definition JSONs | Ready to import via ION Desk |
 | GenAI specs | Agent/tool definition JSONs | Ready to deploy via GAF CLI or API |
@@ -29,7 +28,8 @@ How to package a development project for the release repo. Follow this when addi
 |---------|-----|
 | `CLAUDE.md`, `AGENTS.md`, `AGENT_GUIDE.md` | Dev agent instructions |
 | `log.md`, `memory/`, `.planning/` | Session history |
-| `deploy.local.json`, `deploy.local.<TENANT>.json` | Real tenant values |
+| `prepare_deploy.py` | Dev deploy tooling — end users don't run this |
+| `deploy.local.json`, `deploy.local.*.json`, `deploy.local.example.json` | All deploy config is dev-side; end users set input args in Studio/tenant |
 | `.deploy/` | Generated per-user, not source |
 | `__pycache__/`, `*.pyc` | Build artifacts |
 | `.kiro/`, `.claude/` | Dev tool configs |
@@ -61,10 +61,16 @@ Every project README should follow this structure:
 ### Asset-Specific Notes
 
 #### RPA Projects
-- Run `prepare_deploy.py` to generate `.deploy/` — but don't commit `.deploy/`
-- The `deploy.local.example.json` is the user's starting point
-- XAML variable defaults should be empty or placeholder — real values come from deploy config
+- The user's workflow is: download → open in Studio → set input arguments → publish to tenant
+- No deploy scripts, no config file editing — all tenant config goes through Studio input arguments or tenant process arguments
+- Input arguments should be categorized:
+  - **Process arguments** (set once per tenant): `tenantURL`, `site`, `configurationFolder`
+  - **User arguments** (set per run by operators): generation parameters like document count, mode, etc.
+- XAML variable defaults for paths (`projectPathSource`, `repoRoot`) should auto-resolve at runtime from the workflow's own location — never hardcoded
+- `configurationFolder` stays user-configured because it controls where logs/output land on the deployed server
 - `processId` in `project.json` should be zeroed (`00000000-...`) — it's assigned on first publish
+- If the project depends on Python or other external tools, the workflow should check for availability at runtime and return a clear error message if missing — not a cryptic stack trace
+- `prepare_deploy.py` and `deploy.local.*.json` are dev tools — never include them in a release
 
 #### IDP Models (Future)
 - Export the DPF model from IDP as JSON
