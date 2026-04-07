@@ -4,27 +4,11 @@ Deterministic invoice PDF generator for Infor CloudSuite Industrial. Produces re
 
 ## What It Does
 
-- Generates batches of invoice PDFs from a simple configuration
+- Generates batches of invoice PDFs from a simple configuration dialog
 - Supports PO-based invoices (goods/materials) and non-PO invoices (services/labor)
 - Deterministic: same inputs always produce the same outputs
 - Optionally resolves live vendor, item, and numbering data from your CSI tenant
 - Emits a machine-readable manifest alongside the PDFs for downstream automation
-
-## Prerequisites
-
-| Requirement | Details |
-|-------------|---------|
-| Infor RPA Studio | 2024.x or later |
-| Infor CloudSuite Industrial tenant | Any active CSI/SyteLine tenant |
-| Python 3.11+ | Must be installed and in the system PATH on the machine that runs the RPA process |
-| Google Chrome or Microsoft Edge | For browser-backed PDF rendering |
-
-Python package `reportlab` is also required. Run once on the target machine:
-```cmd
-pip install reportlab
-```
-
-> If Python is not installed when the process runs, the workflow will display a clear error message with installation instructions.
 
 ## Deployment
 
@@ -38,11 +22,11 @@ Download `InvoiceSampleGenerator.zip` from this folder.
 2. Select **File > Import**
 3. Select `InvoiceSampleGenerator.zip`
 4. Choose where to extract the project (e.g., `C:\InforRPA\`)
-5. Studio extracts and opens the project — all workflows and scripts are included
+5. Studio extracts and opens the project
 
 ### Step 3: Configure Input Arguments
 
-Set these values in Studio (for local testing) or on the tenant after publishing (as process arguments):
+Set these values in Studio's input arguments panel:
 
 | Argument | What to Set | Example |
 |----------|-------------|---------|
@@ -53,51 +37,33 @@ Set these values in Studio (for local testing) or on the tenant after publishing
 
 > **Tip:** Leave `tenantURL` blank to run in fully synthetic mode — no tenant connection needed. Useful for testing before connecting to a live environment.
 
-### Step 4: Publish to Your Tenant
+### Step 4: Run
 
-1. In RPA Studio, select **Publish**
-2. Choose your target tenant
-3. After publishing, configure the input arguments on the tenant:
-   - Set `configurationFolder`, `tenantURL`, and `site` as **process arguments**
-   - Set generation parameters (document count, line count, etc.) as **user arguments** if operators should control them at runtime
+Click **Run** on `MainPage.xaml`. A configuration dialog appears where you can set:
 
-### Step 5: Run
-
-**From the tenant:** Trigger the published process. The operator sees an input dialog for generation parameters.
-
-**From Studio (local testing):** Open `MainPage.xaml` and click Run.
+- Number of invoices to generate
+- Document mode (PO or Non-PO)
+- Output folder
+- Whether to use live CSI vendors and items
+- Invoice and PO number prefixes
+- Tax settings
 
 Generated PDFs and a `manifest.json` appear in the configured output folder.
 
-## Generation Parameters
+### Step 5: Publish (Optional)
 
-These are the operator-facing inputs shown at runtime:
+To run from the tenant instead of Studio:
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `docCount` | int | Number of invoices to generate |
-| `lineCount` | int | Line items per invoice |
-| `isNonPo` | bool | `True` for service invoices, `False` for PO-based |
-| `useExistingVendors` | bool | Use real vendor data from CSI |
-| `selectedVendor` | string | Specific vendor codes, pipe-delimited (e.g., `VEND001\|VEND002`) |
-| `useExistingItems` | bool | Use real item data from CSI |
-| `selectedItems` | string | Specific item codes, pipe-delimited |
-| `invoicePrefix` | string | Invoice number prefix (e.g., `INVDM`) |
-| `invoiceStartNumber` | int | Starting invoice number |
-| `poPrefix` | string | PO number prefix (e.g., `PODM`) |
-| `poStartNumber` | int | Starting PO number |
-| `lookupLatestNumbers` | bool | Query tenant for latest invoice/PO numbers to avoid collisions |
-| `seed` | int | Random seed for deterministic generation |
-
-See `samples/` for complete request examples.
+1. In RPA Studio, select **Publish**
+2. Choose your target tenant
+3. Configure `configurationFolder`, `tenantURL`, and `site` as process arguments on the tenant
 
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| "Python is not installed" error | Install Python 3.11+ and ensure `python` is in the system PATH |
-| "reportlab not found" error | Run `pip install reportlab` on the target machine |
-| Browser rendering fails | Ensure Chrome or Edge is installed on the machine |
+| "Python is not installed" error | Install Python 3.11+ and ensure `python` is in the system PATH (see Prerequisites below) |
+| Browser rendering fails | Ensure Google Chrome or Microsoft Edge is installed on the machine |
 | CSI lookup timeout | Verify `tenantURL` is correct and the tenant is accessible |
 | No output generated | Check `configurationFolder` is set and the folder exists with write permissions |
 
@@ -106,13 +72,20 @@ See `samples/` for complete request examples.
 ```
 InvoiceSampleGenerator/
 ├── README.md                      # This file
-├── InvoiceSampleGenerator.zip     # Import this into RPA Studio
-└── samples/                       # Example request files for reference
-    ├── po_sample_request.json
-    └── non_po_sample_request.json
+└── InvoiceSampleGenerator.zip     # Import this into RPA Studio
 ```
 
-The zip contains the complete RPA project and all Python scripts. After import, everything is in one folder on your machine.
+## Prerequisites
+
+The RPA project uses Python internally to render invoice PDFs. The following must be installed on the machine that runs the process:
+
+| Requirement | Details |
+|-------------|---------|
+| Infor RPA Studio | 2024.x or later |
+| Infor CloudSuite Industrial tenant | Any active CSI/SyteLine tenant (optional — synthetic mode works without one) |
+| Python 3.11+ | Must be installed and in the system PATH |
+| `reportlab` Python package | Run `pip install reportlab` once from a command prompt |
+| Google Chrome or Microsoft Edge | For browser-backed PDF rendering |
 
 ## Source Code
 
