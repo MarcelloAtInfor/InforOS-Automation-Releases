@@ -19,7 +19,6 @@ Deterministic invoice processing automation for Infor CloudSuite Industrial. Ext
 | Infor CloudSuite Industrial | Active CSI/SyteLine tenant |
 | IDP Access | To import the invoice extraction model |
 | ION Desk Access | To import and activate notification workflows |
-| ION API Connection | RPA uses ION API for CSI IDO calls and workflow triggers |
 
 ## Deployment
 
