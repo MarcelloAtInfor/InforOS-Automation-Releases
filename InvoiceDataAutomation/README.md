@@ -60,16 +60,7 @@ Set these values in Studio's input arguments panel before running:
 | `site` | Your CSI site code | `ACME_PRD_MAIN` |
 | `enableDebugMode` | Verbose logging | `True` / `False` |
 
-### Step 5: Bind OCR
-
-The OCR binding is tenant-specific and must be done manually after import:
-
-1. Open `ExtractOCRData.xaml` in Studio
-2. Find the placeholder OCR activity
-3. Reconnect it to the IDP model you imported in Step 1 (`CSI_APInvoice_Extract`)
-4. Save the project
-
-### Step 6: Run
+### Step 5: Run
 
 1. Place a sample invoice PDF in the input folder (samples are provided in `samples/`)
 2. Run `MainPage.xaml` from Studio
@@ -86,7 +77,7 @@ The OCR binding is tenant-specific and must be done manually after import:
 
 4. Verify: vendor created/reused, items created/reused, PO created with correct lines, notification received
 
-### Step 7: Publish (Optional)
+### Step 6: Publish (Optional)
 
 To run from the tenant instead of Studio:
 
