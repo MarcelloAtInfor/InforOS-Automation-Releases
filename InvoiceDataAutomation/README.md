@@ -15,7 +15,7 @@ Deterministic invoice processing automation for Infor CloudSuite Industrial. Ext
 
 | Requirement | Details |
 |-------------|---------|
-| Infor RPA Studio | 2024.x or later |
+| Infor RPA Studio | 2026.01 or later |
 | Infor CloudSuite Industrial | Active CSI/SyteLine tenant |
 | IDP Access | To import the invoice extraction model |
 | ION Desk Access | To import and activate notification workflows |
