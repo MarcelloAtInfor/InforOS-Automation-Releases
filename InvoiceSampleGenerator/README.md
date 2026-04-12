@@ -91,7 +91,7 @@ To run from the tenant instead of Studio:
 
 | Issue | Solution |
 |-------|----------|
-| "Restart RPA Studio" message on first run | Python was just installed. Close and reopen Studio, then run again. This only happens once. |
+| "Restart RPA Studio" message on first run | Python was just installed. Close and reopen Studio, then run again. This only happens once. If running from RPA Assistant instead of Studio, click the up arrow (▲) in the Windows taskbar notification area, right-click the RPA Assistant icon, select Exit, then relaunch it. |
 | Python auto-install fails | Install Python 3.11+ manually from [python.org](https://www.python.org/downloads/) or the Windows Store, restart Studio, and run again |
 | reportlab install fails | Open a command prompt and run `pip install reportlab`, then run again |
 | Browser rendering fails | Ensure Google Chrome or Microsoft Edge is installed on the machine |
