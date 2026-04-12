@@ -46,14 +46,25 @@ On first run, the project automatically checks for Python and required packages:
 - If the `reportlab` package is missing, it will install it automatically via `pip`
 - If Python was just installed, you will be prompted to restart RPA Studio once so it can detect Python
 
-After the setup check, a configuration dialog appears where you can set:
+After the setup check, a configuration dialog appears with the following options:
 
-- Number of invoices to generate
-- Document mode (PO or Non-PO)
-- Output folder
-- Whether to use live CSI vendors and items
-- Invoice and PO number prefixes
-- Tax settings
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Document Count | Number of invoice PDFs to generate | `3` |
+| Document Mode | `PO` for purchase-order-based invoices, `Non-PO` for service/labor invoices | `PO` |
+| Lines Per Invoice | Number of line items per invoice. Use a range like `2-6` for variation | `4` |
+| Quantity Per Line | Quantity per line item. Use a range like `1-10` for variation | `1-10` |
+| Output Folder | Where generated PDFs and manifest are saved | `C:\InforRPA\InvoiceSampleGenerator\Output\GeneratedBatch` |
+| Invoice Date | Date printed on the invoices (YYYY-MM-DD) | Today's date |
+| Tax Percent | Tax rate applied to each invoice subtotal | `8.00` |
+| Invoice Prefix | Prefix for invoice numbers (e.g., `INVDM` produces `INVDM001`, `INVDM002`, ...) | `INVDM` |
+| PO Prefix | Prefix for PO numbers (e.g., `PODM` produces `PODM000001`, `PODM000002`, ...) | `PODM` |
+| Use live CSI vendors and items | When checked, pulls real vendor and item data from your CSI tenant instead of using synthetic data. Requires `tenantURL` to be configured. | Enabled if tenant connected |
+| Reuse same vendor across batch | When checked, all invoices in the batch use the same vendor. When unchecked, each invoice gets a different vendor. | Unchecked |
+| Selected Vendors | Pipe-delimited list of specific vendor codes to use (e.g., `V001\|V002`). Leave blank to pick randomly from CSI. | Blank |
+| Selected Items | Pipe-delimited list of specific item codes to use (e.g., `ITEM01\|ITEM02`). Leave blank to pick randomly from CSI. | Blank |
+| Lookup latest PO/invoice numbers from CSI | When checked, queries CSI for the highest existing PO with your prefix and starts numbering from the next value. Prevents duplicate PO numbers. | Enabled if tenant connected |
+| Pair invoice and PO number sequences | When checked, invoice and PO numbers increment together (e.g., `INVDM007` pairs with `PODM000007`). | Checked |
 
 Generated PDFs and a `manifest.json` appear in the configured output folder.
 
