@@ -122,4 +122,3 @@ InvoiceDataAutomation/
 ## Related Projects
 
 - [InvoiceSampleGenerator](../InvoiceSampleGenerator/) — Generate test invoice PDFs for this workflow
-- Source code: [InforOS-Automation-Toolkit](https://github.com/MarcelloAtInfor/InforOS-Automation-Toolkit)

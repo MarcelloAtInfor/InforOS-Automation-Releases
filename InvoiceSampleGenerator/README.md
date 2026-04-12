@@ -9,6 +9,7 @@ Deterministic invoice PDF generator for Infor CloudSuite Industrial. Produces re
 - Deterministic: same inputs always produce the same outputs
 - Optionally resolves live vendor, item, and numbering data from your CSI tenant
 - Emits a machine-readable manifest alongside the PDFs for downstream automation
+- Automatically installs Python and required packages on first run
 
 ## Deployment
 
@@ -39,7 +40,14 @@ Set these values in Studio's input arguments panel:
 
 ### Step 4: Run
 
-Click **Run** on `MainPage.xaml`. A configuration dialog appears where you can set:
+Click **Run** on `MainPage.xaml`.
+
+On first run, the project automatically checks for Python and required packages:
+- If Python is not installed, it will attempt to install it automatically via `winget`
+- If the `reportlab` package is missing, it will install it automatically via `pip`
+- If Python was just installed, you will be prompted to restart RPA Studio once so it can detect Python
+
+After the setup check, a configuration dialog appears where you can set:
 
 - Number of invoices to generate
 - Document mode (PO or Non-PO)
@@ -58,13 +66,26 @@ To run from the tenant instead of Studio:
 2. Choose your target tenant
 3. Configure `configurationFolder`, `tenantURL`, and `site` as process arguments on the tenant
 
+## Prerequisites
+
+| Requirement | Details |
+|-------------|---------|
+| Infor RPA Studio | 2024.x or later |
+| Infor CloudSuite Industrial tenant | Any active CSI/SyteLine tenant (optional — synthetic mode works without one) |
+| Windows 10/11 | Required for automatic Python installation via `winget` |
+| Google Chrome or Microsoft Edge | For browser-backed PDF rendering |
+
+> **Note:** Python 3.11+ and the `reportlab` package are required but are installed automatically on first run. No manual setup needed.
+
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| "Python is not installed" error | Install Python 3.11+ and ensure `python` is in the system PATH (see Prerequisites below) |
+| "Restart RPA Studio" message on first run | Python was just installed. Close and reopen Studio, then run again. This only happens once. |
+| Python auto-install fails | Install Python 3.11+ manually from [python.org](https://www.python.org/downloads/) or the Windows Store, restart Studio, and run again |
+| reportlab install fails | Open a command prompt and run `pip install reportlab`, then run again |
 | Browser rendering fails | Ensure Google Chrome or Microsoft Edge is installed on the machine |
-| CSI lookup timeout | Verify `tenantURL` is correct and the tenant is accessible |
+| CSI lookup timeout | Verify `tenantURL` is correct and uses `mingle-ionapi.inforcloudsuite.com` (not `mingle-portal`) |
 | No output generated | Check `configurationFolder` is set and the folder exists with write permissions |
 
 ## What's Included
@@ -74,19 +95,3 @@ InvoiceSampleGenerator/
 ├── README.md                      # This file
 └── InvoiceSampleGenerator.zip     # Import this into RPA Studio
 ```
-
-## Prerequisites
-
-The RPA project uses Python internally to render invoice PDFs. The following must be installed on the machine that runs the process:
-
-| Requirement | Details |
-|-------------|---------|
-| Infor RPA Studio | 2024.x or later |
-| Infor CloudSuite Industrial tenant | Any active CSI/SyteLine tenant (optional — synthetic mode works without one) |
-| Python 3.11+ | Must be installed and in the system PATH |
-| `reportlab` Python package | Run `pip install reportlab` once from a command prompt |
-| Google Chrome or Microsoft Edge | For browser-backed PDF rendering |
-
-## Source Code
-
-For development, source code, and contribution: see [InforOS-Automation-Toolkit](https://github.com/MarcelloAtInfor/InforOS-Automation-Toolkit/tree/master/InvoiceSampleGenerator).

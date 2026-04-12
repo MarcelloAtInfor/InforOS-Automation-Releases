@@ -6,23 +6,20 @@ Deployment-ready assets and step-by-step guides for Infor OS automation projects
 
 Operators and tenant administrators who want to deploy pre-built automation into their Infor CloudSuite Industrial environment. No development tools, LLM agents, or source code knowledge required.
 
-For source code and development, see [InforOS-Automation-Toolkit](https://github.com/MarcelloAtInfor/InforOS-Automation-Toolkit).
-
 ## Available Projects
 
 | Project | Description | Assets |
 |---------|-------------|--------|
 | [InvoiceDataAutomation](InvoiceDataAutomation/) | Deterministic invoice processing — OCR extraction, vendor/item/PO creation, and verification in CSI | RPA, IDP, ION |
-| [InvoiceSampleGenerator](InvoiceSampleGenerator/) | Deterministic invoice PDF generator for demo and testing workflows | RPA, Python |
+| [InvoiceSampleGenerator](InvoiceSampleGenerator/) | Deterministic invoice PDF generator for demo and testing workflows | RPA |
 
 ## General Prerequisites
 
-Most projects require some combination of:
+Most projects require:
 
-- **Infor RPA Studio** — to import and publish RPA projects
-- **Infor CloudSuite Industrial tenant** — target environment for deployment
-- **Python 3.11+** — for projects that include Python scripts
-- **OAuth credentials** — `.ionapi` file for your tenant (from Infor OS Portal > Infor ION API)
+- **Infor RPA Studio** — 2024.x or later, to import and publish RPA projects
+- **Infor CloudSuite Industrial tenant** — target environment for deployment (some projects can run without one)
+- **Windows 10/11** — for automatic dependency installation
 
 Each project README lists its specific requirements.
 
@@ -30,26 +27,22 @@ Each project README lists its specific requirements.
 
 Every project follows the same general pattern:
 
-1. **Download** the project folder from this repo
-2. **Configure** your tenant details using the provided template (`deploy.local.example.json`)
-3. **Import** into the appropriate Infor tool (RPA Studio, IDP, ION, etc.)
-4. **Publish** to your tenant
-5. **Verify** using the provided test steps
+1. **Download** the zip from the project folder
+2. **Import** into RPA Studio (File > Import)
+3. **Configure** input arguments in Studio (tenant URL, site, etc.)
+4. **Run** from Studio to test
+5. **Publish** to your tenant (optional)
 
 ## Project Structure Convention
-
-Each project folder follows this layout:
 
 ```
 ProjectName/
 ├── README.md                  # Deployment guide (start here)
-├── ProjectName.zip            # Import into the appropriate Infor tool
-└── samples/                   # Example inputs/outputs for reference (if applicable)
+├── ProjectName.zip            # Import into RPA Studio
+└── samples/                   # Example inputs for testing (if applicable)
 ```
 
-The zip is the deliverable. It contains everything needed to deploy — RPA workflows, scripts, configs — in the format the target tool expects for import.
-
-Not every project uses every asset type. Projects with multiple components (e.g., RPA + IDP + ION) may include multiple zips.
+Projects with multiple components (e.g., RPA + IDP + ION) may include additional folders.
 
 ## Release Notes
 
