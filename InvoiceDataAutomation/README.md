@@ -56,16 +56,10 @@ Set these values in Studio's input arguments panel before running:
 
 | Argument | What to Set | Example |
 |----------|-------------|---------|
-| `configurationFolder` | The folder where Studio extracted the project | `C:\InforRPA\DemoInvoiceLoader_V4` |
-| `inputFolderPath` | Folder containing invoice PDFs to process | `C:\InforRPA\DemoInvoiceLoader_V4\Input` |
+| `configurationFolder` | The folder where Studio imported the project | `C:\InforRPA\DemoInvoiceLoader_V4` |
 | `tenantURL` | Your Infor OS Mingle API base URL | `https://mingle-ionapi.inforcloudsuite.com/ACME_PRD/` |
 | `site` | Your CSI site code | `ACME_PRD_MAIN` |
-| `warehouse` | Default warehouse | `MAIN` |
-| `terms` | Default payment terms | `N30` |
-| `userEmail` | Notification recipient email | `operator@company.com` |
-| `enableNotifications` | Enable ION notifications | `True` / `False` |
 | `enableDebugMode` | Verbose logging | `True` / `False` |
-| `documentMode` | `PO` for full processing, `NON_PO` for review-center handoff | `PO` |
 
 ### Step 5: Bind OCR
 
@@ -76,11 +70,22 @@ The OCR binding is tenant-specific and must be done manually after import:
 3. Reconnect it to the IDP model you imported in Step 1 (`CSI_APInvoice_Extract`)
 4. Save the project
 
-### Step 6: Test
+### Step 6: Run
 
 1. Place a sample invoice PDF in the input folder (samples are provided in `samples/`)
 2. Run `MainPage.xaml` from Studio
-3. Verify: vendor created/reused, items created/reused, PO created with correct lines, notification received
+3. A configuration dialog appears with the following runtime settings:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Input Folder | Folder containing invoice PDFs to process (browse to select) | — |
+| Document Mode | `PO` for full processing (vendor, items, PO creation), `NON_PO` for review-center handoff | `PO` |
+| Warehouse | Default CSI warehouse code | `MAIN` |
+| Terms Code | Default payment terms | `N30` |
+| Notification Mode | `BATCH_SUMMARY` for one notification after all documents, `PER_DOCUMENT` for each invoice, `NONE` to disable | `BATCH_SUMMARY` |
+| Your Email | Notification recipient — must be a valid tenant user email | — |
+
+4. Verify: vendor created/reused, items created/reused, PO created with correct lines, notification received
 
 ### Step 7: Publish (Optional)
 
