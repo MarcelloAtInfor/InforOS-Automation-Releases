@@ -48,8 +48,7 @@ No manual GUID configuration is needed — the RPA process dynamically looks up 
 1. Open Infor RPA Studio
 2. Select **File > Import**
 3. Select `DemoInvoiceLoader_V4.zip` from the `RPA/` folder
-4. Choose where to extract the project (e.g., `C:\InforRPA\`)
-5. Studio extracts and opens the project
+4. Studio imports and opens the project
 
 ### Step 4: Configure Input Arguments
 

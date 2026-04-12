@@ -22,8 +22,7 @@ Download `InvoiceSampleGenerator.zip` from this folder.
 1. Open **Infor RPA Studio**
 2. Select **File > Import**
 3. Select `InvoiceSampleGenerator.zip`
-4. Choose where to extract the project (e.g., `C:\InforRPA\`)
-5. Studio extracts and opens the project
+4. Studio imports and opens the project
 
 ### Step 3: Configure Input Arguments
 
