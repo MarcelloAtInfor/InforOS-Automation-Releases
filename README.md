@@ -12,6 +12,7 @@ For source code and development, see [InforOS-Automation-Toolkit](https://github
 
 | Project | Description | Assets |
 |---------|-------------|--------|
+| [InvoiceDataAutomation](InvoiceDataAutomation/) | Deterministic invoice processing — OCR extraction, vendor/item/PO creation, and verification in CSI | RPA, IDP, ION |
 | [InvoiceSampleGenerator](InvoiceSampleGenerator/) | Deterministic invoice PDF generator for demo and testing workflows | RPA, Python |
 
 ## General Prerequisites
